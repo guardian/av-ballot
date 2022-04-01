@@ -1,0 +1,81 @@
+From the brief:
+
+-----
+A report is prepared by the election runner that notes:
+
+Winner and the number of rounds taken to determine the result.
+Total voters count and turnout percentage
+Results of each round, with total valid votes and count of non-transferable votes.
+(A vote is non-transferable when none of the voter's preferred candidates remains in the count)
+-----
+
+
+The winner of this election was Boaty McBoatFace, with 4 rounds taken to reach the result.
+There were 1234 votes from the 2345 eligible voters, giving a turnout of 56.2%.
+
+In round 1, the 1234 votes (128 non-transferable) were as follows:
+
+1. Boaty McBoatFace: 234 votes (29%)
+2. Alder buckthorn: 100 votes (20%)
+3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total
+4. [Tie] Leyland Cypress, Plymouth Pear: 0 votes (0%)
+
+Consequently, Leyland Cypress and Plymouth Pear were eliminated.
+
+In round 2, the 1234 votes (128 non-transferable) were as follows:
+
+1. Boaty McBoatFace: 234 votes (29%)
+2. Alder buckthorn: 100 votes (20%)
+3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total
+
+The tied last-placed candidates (Whitebeam, Sycamore, Western Red Cedar) collectively held a majority -
+51% of the first-preference vote. Rather than eliminate all of them, further preferences for those candidates were
+checked (only candidates being considered for last-place are listed):
+
+    2nd-preference votes for these three candidates (876 votes, 82% total):
+    1. Whitebeam: 123 votes (30%)
+    2. [Tie] Sycamore, Western Red Cedar: 50 votes (26%) each, 100 votes (52%) total
+
+    3rd-preference votes:
+    1. Western Red Cedar: 200 votes (32%) each
+    2. Sycamore: 128 votes (30%)
+
+Consequently, Sycamore was eliminated at the end of Round 2.
+
+In round 3, the 878 votes (128 non-transferable) were as follows:
+
+1. Boaty McBoatFace: 234 votes (36%)
+2. Alder buckthorn: 100 votes (20%)
+3. [Tie] Whitebeam, Western Red Cedar: 50 votes (17%) each, 100 votes (34%) total
+
+Consequently, Whitebeam and Western Red Cedar were eliminated.
+
+In round 4, the 600 votes (128 non-transferable) were as follows:
+1. Boaty McBoatFace: 320 votes (54%)
+2. Alder buckthorn: 280 votes (46%)
+
+Consequently, with a majority of 54%, Boaty McBoatFace was declared winner.
+
+
+
+=============
+
+In round 1, the 150 votes (0 non-transferable) were as follows:
+
+1. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (33%) each, 150 votes (100%) total
+
+The tied last-placed candidates (Whitebeam, Sycamore, Western Red Cedar) collectively held a majority -
+100% of the first-preference vote. Rather than eliminate all of them, further preferences for those candidates were
+checked (only candidates being considered for last place are listed):
+
+    2nd-preference votes:
+    1. Whitebeam: 100 votes (66%)
+    2. [Tie] Sycamore, Western Red Cedar: 25 votes (17%) each, 50 votes (34%) total
+
+Consequently, Whitebeam and Western Red Cedar were eliminated.
+
+In round 2, the 150 votes (150 non-transferable) were as follows:
+
+1. Whitebeam: 150 votes (100%)
+
+Consequently, with a majority of 100%, Whitebeam was declared winner.
