@@ -20,7 +20,7 @@ case class Preference(order:NonEmptySeq[Candidate]) {
   }
 
   def eliminate(candidates: Set[Candidate]): Option[Preference] = for {
-    nonEmptyPreferenceOrder <- NonEmptySeq.fromSeq(order.filterNot(candidates))
+    nonEmptyPreferenceOrder <- NonEmptySeq.fromSeq(order.filterNot(candidates.contains))
   } yield Preference(nonEmptyPreferenceOrder)
 }
 

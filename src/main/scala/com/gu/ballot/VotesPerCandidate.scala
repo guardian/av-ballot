@@ -1,7 +1,18 @@
 package com.gu.ballot
 
+import cats.*
+import cats.data.*
+import cats.implicits.*
 import scala.collection.immutable.SortedMap
 import com.madgag.scala.collection.decorators.*
+
+case class Acc(candidates: Set[Candidate], collectiveTotalVote: Int) {
+  def add(moreCandidates: Set[Candidate], votesForEach: Int): Acc =
+    Acc(candidates ++ moreCandidates, collectiveTotalVote + (votesForEach * moreCandidates.size))
+}
+object Acc {
+  val Zero: Acc = Acc(Set.empty, 0)
+}
 
 case class VotesPerCandidate(votes: Map[Candidate, Int]) {
 
@@ -17,19 +28,45 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
     Option.when(leadingCandidates.size == 1 && leadingVoteNum > majorityThreshold)(leadingCandidates.head)
   }
 
+  val candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate: Option[Acc] = {
+    // find first rank where accumulated candidates leave fewer remaining votes than the individual rank vote
+
+    val boo: Either[Acc, Acc] = rankedByVotes.toSeq.foldM(Acc.Zero) {
+      case (acc, (individualVoteCountAtRank, rankGroup)) =>
+        val updatedAcc = acc.add(rankGroup, individualVoteCountAtRank)
+        val remainingVotes: Int = numVotes - updatedAcc.collectiveTotalVote
+        Either.cond(remainingVotes >= individualVoteCountAtRank, updatedAcc, updatedAcc)
+    }
+
+    // iterate over rankedByVotes (starting at last-placed), and total-up how many votes we've had so far.
+    // This must be compared with the lowest number of votes from the next rank up - if it is *less* then
+    // the group collected so far can be eliminated
+    val boom: Seq[(Int, Set[Candidate])] = rankedByVotes.toSeq.reverse
+    (boom.zip(boom.tail.map(_._1)).foldM(Acc.Zero) {
+      case (acc, ((individualVoteCountAtRank, rankGroup), votesHeldByLowestScoringCandidateNotInGroup)) =>
+        val updatedAcc = acc.add(rankGroup, individualVoteCountAtRank)
+        val groupAreOfNoAccount = updatedAcc.collectiveTotalVote < votesHeldByLowestScoringCandidateNotInGroup
+        Either.cond(groupAreOfNoAccount,updatedAcc,acc)
+    }).toOption
+  }
+
   def add(candidate: Candidate, numVotes: Int): VotesPerCandidate = VotesPerCandidate(votes.updatedWith(candidate) {
     case Some(existingCount) => Some(existingCount + numVotes)
     case None => Some(numVotes)
   })
 
-  def votesFor(candidateSubSet: Set[Candidate]) = candidateSubSet.flatMap(votes.get).sum
+  def votesFor(candidateSubSet: Set[Candidate]): Int = candidateSubSet.flatMap(votes.get).sum
 
   def wouldHaveMajorityWith(num: Int): Boolean = num >= majorityThreshold
   def wouldHaveMajorityWith(candidateSubSet: Set[Candidate]): Boolean = wouldHaveMajorityWith(votesFor(candidateSubSet))
 
-  def lastPlacedFrom(candidateSubSet: Set[Candidate]): Either[Set[Candidate], Set[Candidate]] = {
-    val lastPlaced: Set[Candidate] = candidateSubSet.intersect(rankedByVotes.values.last)
-    Either.cond(wouldHaveMajorityWith(lastPlaced), lastPlaced, lastPlaced)
+  /** @return It's possible that this group of candidates will collectively hold a *majority*
+   * of the vote, if they are multiple tied candidates, rather than a single candidate!
+   */
+  def lastPlacedAmongst(candidateSubSet: Set[Candidate]): Set[Candidate] = {
+    require(candidateSubSet.subsetOf(votes.keySet))
+
+    VotesPerCandidate(votes.view.filterKeys(candidateSubSet).sumFrequencies).rankedByVotes.values.last
   }
 }
 

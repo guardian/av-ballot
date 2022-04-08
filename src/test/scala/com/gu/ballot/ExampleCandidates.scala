@@ -5,4 +5,6 @@ object ExampleCandidates {
   val B: Candidate = Candidate("B")
   val C: Candidate = Candidate("C")
   val D: Candidate = Candidate("D")
+  val E: Candidate = Candidate("E")
+  val F: Candidate = Candidate("F")
 }
