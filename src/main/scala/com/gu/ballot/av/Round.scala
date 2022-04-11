@@ -14,7 +14,7 @@ import scala.collection.immutable.SortedMap
 type EliminationFunnel = NonEmptySeq[Set[Candidate]]
 
 case class Round(countByPreference: Map[Preference, Int]) {
-
+  
   val candidates:Set[Candidate] = countByPreference.keySet.flatMap(_.order.toSeq)
 
   require(candidates.nonEmpty)
@@ -27,6 +27,9 @@ case class Round(countByPreference: Map[Preference, Int]) {
   }.takeWhile(_.hasVotes)
 
   val firstPreferenceVotes:VotesPerCandidate = preferenceStages.head
+
+  val nonTransferableVotes: Int =
+    preferenceStages.head.numVotes - preferenceStages.tail.headOption.map(_.numVotes).getOrElse(0)
 
   lazy val outcome: Round.Outcome = firstPreferenceVotes.clearWinner.map(ClearWinner(_)).getOrElse {
     // Elimination: Is there a strict subset of candidates (possibly 1 candidate) that collectively have fewer
@@ -49,6 +52,11 @@ case class Round(countByPreference: Map[Preference, Int]) {
     borg.joinLeft.map(technique => Elimination(technique, eliminate(technique.eliminatedCandidates))).merge
   }
 
+  lazy val nextRound: Option[Round] = outcome match {
+    case e: Elimination => Some(e.nextRound)
+    case _ => None
+  }
+  
   lazy val ultimateConclusion: Round.Conclusion = outcome match {
     case c: Round.Conclusion => c
     case elimination: Elimination => elimination.nextRound.ultimateConclusion
@@ -62,6 +70,13 @@ case class Round(countByPreference: Map[Preference, Int]) {
       updatedPreference <- preference.eliminate(candidatesToEliminate)
     } yield updatedPreference -> votes).sumFrequencies)
   }
+
+  val summary: String =
+    s"""the ${firstPreferenceVotes.numVotes} votes ($nonTransferableVotes non-transferable) were as follows:
+       |
+       |${firstPreferenceVotes.rankText().mkString("\n")}
+       """
+    //|1. Boaty McBoatFace: 234 votes (29%)\n2. Alder buckthorn: 100 votes (20%)\n3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total\n4. [Tie] Leyland Cypress, Plymouth Pear: 0 votes (0%)""".stripMargin
 }
 
 object Round {

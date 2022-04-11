@@ -25,23 +25,33 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
 
   val clearWinner: Option[Candidate]= {
     val (leadingVoteNum, leadingCandidates) = rankedByVotes.head
-    Option.when(leadingCandidates.size == 1 && leadingVoteNum > majorityThreshold)(leadingCandidates.head)
+    Option.when(leadingCandidates.size == 1 && leadingVoteNum >= majorityThreshold)(leadingCandidates.head)
   }
 
   val candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate: Option[Acc] = {
     // find first rank where accumulated candidates leave fewer remaining votes than the individual rank vote
 
-    val boo: Either[Acc, Acc] = rankedByVotes.toSeq.foldM(Acc.Zero) {
+    rankedByVotes.toSeq.foldM(Acc.Zero) {
       case (acc, (individualVoteCountAtRank, rankGroup)) =>
         val updatedAcc = acc.add(rankGroup, individualVoteCountAtRank)
         val remainingVotes: Int = numVotes - updatedAcc.collectiveTotalVote
         val remainingVotesCouldChallenge = remainingVotes >= individualVoteCountAtRank
         Either.cond(remainingVotesCouldChallenge, updatedAcc, updatedAcc)
-    }
-    boo.left.toOption.map(invertAcc).filter(_.candidates.nonEmpty)
+    }.left.toOption.map(invertAcc).filter(_.candidates.nonEmpty)
   }
 
   private def invertAcc(acc: Acc): Acc = Acc(votes.keySet -- acc.candidates, numVotes - acc.collectiveTotalVote)
+
+  def rankText(totalVotes: Int = numVotes): Seq[String] = {
+    require(totalVotes >= numVotes)
+
+    OneBasedList(rankedByVotes.toSeq).numberedList { case (individualVoteCountAtRank, rankGroup) =>
+      val tie: Boolean = rankGroup.size > 1
+      val percentage = (100f * individualVoteCountAtRank) / totalVotes
+      (Option.when(tie)("[Tie]").toSeq :+
+        s"${rankGroup.mkString(", ")}: $individualVoteCountAtRank votes ($percentage%)").mkString(" ")
+    }
+  }
 
   def add(candidate: Candidate, numVotes: Int): VotesPerCandidate = VotesPerCandidate(votes.updatedWith(candidate) {
     case Some(existingCount) => Some(existingCount + numVotes)

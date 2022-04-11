@@ -1,6 +1,8 @@
 package com.gu.ballot
 
-case class Candidate(name:String)
+case class Candidate(name:String) {
+  override val toString: String = name
+}
 
 extension (candidates: Iterable[Candidate])
 

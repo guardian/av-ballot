@@ -8,6 +8,19 @@ import ExampleCandidates.*
 import org.scalatest.OptionValues
 
 class VotesPerCandidateTest extends AnyFlatSpec with Matchers with OptionValues {
+  it should "recognise a clear winner if one is present" in {
+    val votesPerCandidate = VotesPerCandidate(Map(A -> 3, B -> 2))
+    votesPerCandidate.majorityThreshold shouldBe 3
+    votesPerCandidate.rankedByVotes.head shouldBe 3 -> Set(A)
+    votesPerCandidate.clearWinner.value shouldBe A
+  }
+
+  it should "report there is no clear winner if no one reaches the majority threshold" in {
+    val votesPerCandidate = VotesPerCandidate(Map(A -> 2, B -> 1, C -> 1))
+    votesPerCandidate.majorityThreshold shouldBe 3
+    votesPerCandidate.rankedByVotes.head shouldBe 2 -> Set(A)
+    votesPerCandidate.clearWinner shouldBe None // 2 votes is not a majority from 4 votes
+  }
 
   it should "acknowledge candidates even if those candidates did not come first in any preference" in {
     val twoVotes = VotesPerCandidate(Map(A -> 2))
