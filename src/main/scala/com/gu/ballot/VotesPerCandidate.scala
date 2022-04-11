@@ -64,5 +64,8 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
 }
 
 object VotesPerCandidate {
-  def zeroForAll(candidates: Set[Candidate]):VotesPerCandidate = VotesPerCandidate(candidates.map(_ -> 0).toMap)
+  def zeroForAll(candidates: Set[Candidate]):VotesPerCandidate = {
+    require(candidates.nonEmpty)
+    VotesPerCandidate(candidates.map(_ -> 0).toMap)
+  }
 }

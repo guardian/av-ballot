@@ -1,8 +1,11 @@
 package com.gu.ballot.av
 
+import cats._
+import cats.data._
+import cats.implicits._
 import com.gu.ballot.ExampleCandidates.*
 import com.gu.ballot.VotesPerCandidate
-import com.gu.ballot.av.Round.{EliminationPath, FewerFirstPreferenceVotes, Outcome}
+import com.gu.ballot.av.Round.{EliminationApproach, FewerFirstPreferenceVotes, Outcome, TieResolution}
 import com.gu.ballot.av.Round.Outcome.*
 import kantan.csv.{ReadError, rfc}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -56,10 +59,26 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
   it should "not crash if the result is a tie" in {
     val round = Round(Preference(A), Preference(B))
     round.firstPreferenceVotes.rankedByVotes.values.head shouldBe Set(A, B)
-    // round.ultimateWinner
+    round.outcome shouldBe EssentialTie(NonEmptySeq.one(Set(A, B)))
   }
 
-  it should "handle ties at the top?!" in {
+  it should "ultimately respect Robert's Rules of Order (RRO) on IRV ties in last-place elimination" in {
+    /**
+     * Robert's Rules of Order say:
+     *
+     * "If at any point two or more candidates or propositions are tied for the least popular position,
+     *  the ballots in their piles are redistributed in a single step, all of the tied names being treated
+     *  as eliminated."
+     *
+     * In this implementation, we're choosing to interpret "tied for the least popular position" as specifically
+     * being "tied for the least popular position after all 2nd, 3rd, etc preferences have been compared", though
+     * when the rule was written it may have meant simply "tied for the least popular position amongst 1st preference
+     * votes". One advantage of electronic voting is that it's easy to compare 2nd, 3rd, etc preferences at will.
+     *
+     * Regardless, RRO's rule about bulk-elimination of tied candidates provides a simple strategy for dealing
+     * with last-place ties. It's quite blunt, and may gloss over situations where the truest reflection of
+     * voter preferences would in fact be to declare an 'essential' tie.
+     */
     val round1 = Round(
       Preference(A, B), Preference(A, C),
       Preference(B, A), Preference(B, A),
@@ -68,7 +87,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     inside(round1.outcome) {
       case elimination: Elimination =>
         inside(elimination.eliminationPath) {
-          case path: FewerFirstPreferenceVotes => path.eliminatedCandidates shouldBe Set(B, C)
+          case path: TieResolution => path.eliminatedCandidates shouldBe Set(B, C)
         }
         elimination.nextRound.outcome shouldBe ClearWinner(A)
     }
