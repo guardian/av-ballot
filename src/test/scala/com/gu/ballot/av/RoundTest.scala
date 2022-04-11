@@ -1,16 +1,16 @@
 package com.gu.ballot.av
 
-import cats._
-import cats.data._
-import cats.implicits._
+import cats.*
+import cats.data.*
+import cats.implicits.*
 import com.gu.ballot.ExampleCandidates.*
 import com.gu.ballot.VotesPerCandidate
-import com.gu.ballot.av.Round.{EliminationApproach, FewerFirstPreferenceVotes, Outcome, TieResolution}
 import com.gu.ballot.av.Round.Outcome.*
+import com.gu.ballot.av.Round.Outcome.Elimination.*
 import kantan.csv.{ReadError, rfc}
+import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.Inside
 
 class RoundTest extends AnyFlatSpec with Matchers with Inside {
 
@@ -91,6 +91,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
         }
         elimination.nextRound.outcome shouldBe ClearWinner(A)
     }
+    round1.ultimateConclusion shouldBe ClearWinner(A)
   }
 
 

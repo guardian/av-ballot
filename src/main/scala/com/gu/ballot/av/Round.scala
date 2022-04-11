@@ -7,7 +7,7 @@ import com.gu.ballot.*
 import com.gu.ballot.Candidate
 import com.madgag.scala.collection.decorators.*
 import Round.Outcome.*
-import com.gu.ballot.av.Round.{EliminationApproach, TieResolution}
+import com.gu.ballot.av.Round.Outcome.Elimination.{FewerFirstPreferenceVotes, TieResolution}
 
 import scala.collection.immutable.SortedMap
 
@@ -32,8 +32,8 @@ case class Round(countByPreference: Map[Preference, Int]) {
     // Elimination: Is there a strict subset of candidates (possibly 1 candidate) that collectively have fewer
     // votes than all the other voters? If so, yay - otherwise we have a lowest-rank tie, and need to try to
     // differentiate among the candidates in that lowest rank (which may be the only rank) to find the worst one.
-    val borg: Either[Either[EssentialTie, TieResolution], EliminationApproach] = firstPreferenceVotes.candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate.map { voo =>
-      Round.FewerFirstPreferenceVotes(voo.candidates)
+    val borg: Either[Either[EssentialTie, TieResolution], Elimination.Approach] = firstPreferenceVotes.candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate.map { voo =>
+      FewerFirstPreferenceVotes(voo.candidates)
     }.toRight {
       val funnel: EliminationFunnel =
         preferenceStages.tail.foldM(NonEmptySeq.one(firstPreferenceVotes.rankedByVotes.last._2)) {
@@ -47,6 +47,11 @@ case class Round(countByPreference: Map[Preference, Int]) {
       Either.cond(funnel.last.size < candidates.size,TieResolution(funnel), EssentialTie(funnel))
     }
     borg.joinLeft.map(technique => Elimination(technique, eliminate(technique.eliminatedCandidates))).merge
+  }
+
+  lazy val ultimateConclusion: Round.Conclusion = outcome match {
+    case c: Round.Conclusion => c
+    case elimination: Elimination => elimination.nextRound.ultimateConclusion
   }
 
   def eliminate(candidatesToEliminate: Set[Candidate]): Round = {
@@ -65,29 +70,41 @@ object Round {
   def apply(firstElement: (Preference, Int), otherElements: (Preference, Int)*): Round =
     Round((firstElement +: otherElements).toMap)
 
-  enum Outcome:
-    case ClearWinner(candidate: Candidate)
-    case Elimination(eliminationPath: EliminationApproach, nextRound: Round)
-    case EssentialTie(failedTieBreakFunnel: EliminationFunnel) // No further candidates can be removed. No rational method can break an essential tie, only outside intervention
+  sealed trait Outcome
+  sealed trait Conclusion extends Outcome
 
+  object Outcome {
 
-  sealed trait EliminationApproach {
-    val eliminatedCandidates: Set[Candidate]
+    case class ClearWinner(candidate: Candidate) extends Conclusion
+
+    case class Elimination(eliminationPath: Elimination.Approach, nextRound: Round) extends Outcome
+
+    object Elimination {
+      sealed trait Approach {
+        val eliminatedCandidates: Set[Candidate]
+      }
+
+      /**
+       * This is the elimination path that's most inarguable/clear in terms of reaching a resolution!
+       *
+       * From https://en.wikipedia.org/wiki/Instant-runoff_voting#Process :
+       * "The set of all candidates with the fewest first-order votes whose votes together total less than
+       *  any other candidate's can be eliminated without changing the outcome. This bulk elimination can
+       *  bypass irrelevant ties"
+       */
+      case class FewerFirstPreferenceVotes(eliminatedCandidates: Set[Candidate]) extends Approach
+
+      // Show the narrowing set of last-placed candidates
+      case class TieResolution(eliminationFunnel: EliminationFunnel) extends Approach {
+        override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.last
+      }
+    }
+
+    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion
   }
 
-  /**
-   * This is the elimination path that's most inarguable/clear in terms of reaching a resolution!
-   *
-   * From https://en.wikipedia.org/wiki/Instant-runoff_voting#Process :
-   * "The set of all candidates with the fewest first-order votes whose votes together total less than
-   *  any other candidate's can be eliminated without changing the outcome. This bulk elimination can
-   *  bypass irrelevant ties"
-   */
-  case class FewerFirstPreferenceVotes(eliminatedCandidates: Set[Candidate]) extends EliminationApproach
 
-  // Show the narrowing set of last-placed candidates
-  case class TieResolution(eliminationFunnel: EliminationFunnel) extends EliminationApproach {
-    override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.last
-  }
+
+
 
 }
