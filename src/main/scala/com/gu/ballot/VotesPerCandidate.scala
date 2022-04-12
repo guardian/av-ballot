@@ -3,12 +3,15 @@ package com.gu.ballot
 import cats.*
 import cats.data.*
 import cats.implicits.*
-import scala.collection.immutable.SortedMap
+import com.gu.ballot.VotesPerCandidate.{TotalVotes, VoteRank}
+import com.gu.ballot.VotesPerCandidate.VoteRank.SingleCandidate
+
+import scala.collection.immutable.{SortedMap, SortedSet}
 import com.madgag.scala.collection.decorators.*
 
 case class Acc(candidates: Set[Candidate], collectiveTotalVote: Int) {
-  def add(moreCandidates: Set[Candidate], votesForEach: Int): Acc =
-    Acc(candidates ++ moreCandidates, collectiveTotalVote + (votesForEach * moreCandidates.size))
+  def add(voteRank: VoteRank): Acc =
+    Acc(candidates ++ voteRank.candidates, collectiveTotalVote + voteRank.totalRankVotes)
 }
 object Acc {
   val Zero: Acc = Acc(Set.empty, 0)
@@ -20,37 +23,33 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
   val hasVotes: Boolean = numVotes > 0
   val majorityThreshold:Int = 1+(numVotes/2)
 
-  val rankedByVotes: SortedMap[Int, Set[Candidate]] =
-    SortedMap.from(votes.groupUp(_._2)(_.keySet))(Ordering[Int].reverse)
+  val rankedByVotes: SortedSet[VoteRank] = SortedSet.from(for {
+    (individualVotes, rankGroup) <- votes.groupUp(_._2)(_.keySet)
+  } yield VoteRank(rankGroup, individualVotes))
 
-  val clearWinner: Option[Candidate]= {
-    val (leadingVoteNum, leadingCandidates) = rankedByVotes.head
-    Option.when(leadingCandidates.size == 1 && leadingVoteNum >= majorityThreshold)(leadingCandidates.head)
+  val clearWinner: Option[Candidate] = rankedByVotes.head match {
+    case voteRank: SingleCandidate if voteRank.individualVotes >= majorityThreshold => Some(voteRank.candidate)
+    case _ => None
   }
 
   val candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate: Option[Acc] = {
     // find first rank where accumulated candidates leave fewer remaining votes than the individual rank vote
 
     rankedByVotes.toSeq.foldM(Acc.Zero) {
-      case (acc, (individualVoteCountAtRank, rankGroup)) =>
-        val updatedAcc = acc.add(rankGroup, individualVoteCountAtRank)
+      case (acc, voteRank) =>
+        val updatedAcc = acc.add(voteRank)
         val remainingVotes: Int = numVotes - updatedAcc.collectiveTotalVote
-        val remainingVotesCouldChallenge = remainingVotes >= individualVoteCountAtRank
+        val remainingVotesCouldChallenge = remainingVotes >= voteRank.individualVotes
         Either.cond(remainingVotesCouldChallenge, updatedAcc, updatedAcc)
     }.left.toOption.map(invertAcc).filter(_.candidates.nonEmpty)
   }
 
   private def invertAcc(acc: Acc): Acc = Acc(votes.keySet -- acc.candidates, numVotes - acc.collectiveTotalVote)
 
-  def rankText(totalVotes: Int = numVotes): Seq[String] = {
-    require(totalVotes >= numVotes)
+  def rankText(using totalVotes: TotalVotes = TotalVotes(numVotes)): Seq[String] = {
+    require(totalVotes.num >= numVotes)
 
-    OneBasedList(rankedByVotes.toSeq).numberedList { case (individualVoteCountAtRank, rankGroup) =>
-      val tie: Boolean = rankGroup.size > 1
-      val percentage = (100f * individualVoteCountAtRank) / totalVotes
-      (Option.when(tie)("[Tie]").toSeq :+
-        f"${rankGroup.mkString(", ")}: $individualVoteCountAtRank votes ($percentage%2.1f%%)").mkString(" ")
-    }
+    OneBasedList(rankedByVotes.toSeq).numberedList(_.summary)
   }
 
   def add(candidate: Candidate, numVotes: Int): VotesPerCandidate = VotesPerCandidate(votes.updatedWith(candidate) {
@@ -69,7 +68,7 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
   def lastPlacedAmongst(candidateSubSet: Set[Candidate]): Set[Candidate] = {
     require(candidateSubSet.subsetOf(votes.keySet))
 
-    VotesPerCandidate(votes.view.filterKeys(candidateSubSet).sumFrequencies).rankedByVotes.values.last
+    VotesPerCandidate(votes.view.filterKeys(candidateSubSet).sumFrequencies).rankedByVotes.last.candidates
   }
 }
 
@@ -78,4 +77,38 @@ object VotesPerCandidate {
     require(candidates.nonEmpty)
     VotesPerCandidate(candidates.map(_ -> 0).toMap)
   }
+
+  sealed trait VoteRank {
+    val individualVotes: Int
+    val totalRankVotes: Int
+    val candidates: Set[Candidate]
+    def summary(using TotalVotes): String
+  }
+
+  object VoteRank {
+    given Ordering[VoteRank] = Ordering[Int].reverse.on(_.individualVotes)
+
+    def apply(candidates: Set[Candidate], individualVote: Int): VoteRank = {
+      if (candidates.size == 1) SingleCandidate(candidates.head, individualVote) else Tie(candidates, individualVote)
+    }
+
+    case class SingleCandidate(candidate: Candidate, individualVotes: Int) extends VoteRank {
+      val totalRankVotes: Int = individualVotes
+      val candidates: Set[Candidate] = Set(candidate)
+      def summary(using TotalVotes): String = s"$candidate: ${individualVotes.summary}"
+    }
+    case class Tie(candidates: Set[Candidate], individualVotes: Int) extends VoteRank {
+      val totalRankVotes: Int = individualVotes * candidates.size
+      def summary(using TotalVotes): String = s"[Tie] ${candidates.mkString(", ")}: ${individualVotes.summary} each, ${totalRankVotes.summary} total"
+        // [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total
+    }
+  }
+
+  case class TotalVotes(num: Int)
+
+  extension (voteCount: Int)
+    def summary(using t: TotalVotes): String = {
+      val percentage = (100f * voteCount)/t.num
+      f"$voteCount votes ($percentage%2.1f%%)"
+    }
 }

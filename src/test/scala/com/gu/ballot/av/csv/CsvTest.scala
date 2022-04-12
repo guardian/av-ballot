@@ -13,6 +13,6 @@ class CsvTest extends AnyFlatSpec with Matchers {
   it should "be a temporary test that prints stuff " in {
     val rawData: java.net.URL = getClass.getResource("/dummy-election.responses.csv")
 
-    println(BallotReport.derivingElectorateFrom(VotesCsvParser.parse(UrlSrc(rawData))).report)
+    println("\n"+BallotReport.derivingElectorateFrom(VotesCsvParser.parse(UrlSrc(rawData))).report)
   }
 }

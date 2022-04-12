@@ -11,7 +11,7 @@ case class BallotReport(electorateSize: Int, ballotCount: BallotCount) {
   val report: String = {
     (ballotCount.conclusion match {
       case ClearWinner(winner) =>
-        s"The winner of this election was candidate $winner"
+        s"The winner of this election was candidate *** $winner ***"
       case EssentialTie(_) =>
         "The results led to an essential tie"
     }) +

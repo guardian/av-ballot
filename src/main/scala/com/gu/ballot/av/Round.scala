@@ -39,7 +39,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
       FewerFirstPreferenceVotes(voo.candidates)
     }.toRight {
       val funnel: EliminationFunnel =
-        preferenceStages.tail.foldM(NonEmptySeq.one(firstPreferenceVotes.rankedByVotes.last._2)) {
+        preferenceStages.tail.foldM(NonEmptySeq.one(firstPreferenceVotes.rankedByVotes.last.candidates)) {
           case (funnel, preferenceStage) =>
             val funnelStage: Set[Candidate] = preferenceStage.lastPlacedAmongst(funnel.last)
             val updatedFunnel = funnel.append(funnelStage)
@@ -74,7 +74,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
   val summary: String =
     s"""the ${firstPreferenceVotes.numVotes} votes ($nonTransferableVotes non-transferable) were as follows:
        |
-       |${firstPreferenceVotes.rankText().mkString("\n")}
+       |${firstPreferenceVotes.rankText.mkString("\n")}
        """
     //|1. Boaty McBoatFace: 234 votes (29%)\n2. Alder buckthorn: 100 votes (20%)\n3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total\n4. [Tie] Leyland Cypress, Plymouth Pear: 0 votes (0%)""".stripMargin
 }

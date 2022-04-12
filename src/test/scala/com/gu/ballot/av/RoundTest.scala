@@ -5,6 +5,8 @@ import cats.data.*
 import cats.implicits.*
 import com.gu.ballot.ExampleCandidates.*
 import com.gu.ballot.VotesPerCandidate
+import com.gu.ballot.VotesPerCandidate.VoteRank
+import com.gu.ballot.VotesPerCandidate.VoteRank.{SingleCandidate, Tie}
 import com.gu.ballot.av.Round.Outcome.*
 import com.gu.ballot.av.Round.Outcome.Elimination.*
 import kantan.csv.{ReadError, rfc}
@@ -29,7 +31,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     Round(
       Preference(A, C),
       Preference(B, C)
-    ).firstPreferenceVotes.rankedByVotes.toSeq shouldBe Seq(1 -> Set(A,B), 0 -> Set(C))
+    ).firstPreferenceVotes.rankedByVotes.toSeq shouldBe Seq(Tie(Set(A,B), 1), SingleCandidate(C, 0))
   }
 
   it should "count votes at different preference stages" in {
@@ -58,7 +60,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
 
   it should "not crash if the result is a tie" in {
     val round = Round(Preference(A), Preference(B))
-    round.firstPreferenceVotes.rankedByVotes.values.head shouldBe Set(A, B)
+    round.firstPreferenceVotes.rankedByVotes.head.candidates shouldBe Set(A, B)
     round.outcome shouldBe EssentialTie(NonEmptySeq.one(Set(A, B)))
   }
 
