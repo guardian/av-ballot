@@ -18,7 +18,7 @@ case class BallotCount(countByPreference: Map[Preference, Int]) {
   }
 
   val roundsReport: String =
-    rounds.zipWithIndex.map { case (round, index) => s"In round ${index+1}, ${round.summary}"}.mkString("\n\n")
+    rounds.zipWithIndex.map { case (round, index) => s"In round ${index+1}, ${round.summary} at the end of round ${index+1}."}.mkString("\n\n")
 
 }
 

@@ -82,7 +82,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
     firstPreferenceVotes.rankText.mkString("\n"),
   ) ++
     outcome.furtherExplanation(using firstPreferenceVotes)
-    ++ Seq(s"Consequently, $outcomeSummary.")).mkString("\n\n")
+    ++ Seq(s"Consequently, $outcomeSummary")).mkString("\n\n")
 }
 
 object Round {
