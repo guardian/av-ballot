@@ -16,12 +16,11 @@ object VotesCsvParser {
     val header: List[String] = reader.next().toOption.get
 
     val responses: (Seq[ReadError], Seq[List[String]]) = reader.toSeq.separate
+    val columnsBeforeVoteColumns = 2
 
-    println(header)
+    println("Vote preference columns are:\n\n"+header.drop(columnsBeforeVoteColumns).map(s => s"\t* $s").mkString("\n"))
 
     val voteRows: Seq[List[String]] = responses._2
-
-    val columnsBeforeVoteColumns = 1
 
     val preferences: Seq[Preference] = for {
       voteRow <- voteRows

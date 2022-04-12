@@ -49,7 +49,7 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
       val tie: Boolean = rankGroup.size > 1
       val percentage = (100f * individualVoteCountAtRank) / totalVotes
       (Option.when(tie)("[Tie]").toSeq :+
-        s"${rankGroup.mkString(", ")}: $individualVoteCountAtRank votes ($percentage%)").mkString(" ")
+        f"${rankGroup.mkString(", ")}: $individualVoteCountAtRank votes ($percentage%2.1f%%)").mkString(" ")
     }
   }
 
