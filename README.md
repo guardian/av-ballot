@@ -3,6 +3,12 @@ _processing [Alternative Vote](https://www.electoral-reform.org.uk/voting-system
 
 No Liability or Warranty implied, code licensed under the APACHE LICENSE, VERSION 2.0.
 
+# Running the code
+
+1. Install sbt: https://www.scala-sbt.org/download.html
+2. Enter the `sbt` prompt
+3. `run --votes path/to/dummy-votes.csv`
+
 
 See also: 
 
