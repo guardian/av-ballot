@@ -52,6 +52,12 @@ case class Round(countByPreference: Map[Preference, Int]) {
     borg.joinLeft.map(technique => Elimination(technique, eliminate(technique.eliminatedCandidates))).merge
   }
 
+  lazy val outcomeSummary: String = outcome match {
+    case ClearWinner(winner) => s"with a majority of xx%, $winner was declared winner"
+    case elimination: Elimination => s"${elimination.eliminatedCandidates.wasOrWere} eliminated"
+    case essentialTie: EssentialTie => "there was an essential tie."
+  }
+
   lazy val nextRound: Option[Round] = outcome match {
     case e: Elimination => Some(e.nextRound)
     case _ => None
@@ -75,8 +81,9 @@ case class Round(countByPreference: Map[Preference, Int]) {
     s"""the ${firstPreferenceVotes.numVotes} votes ($nonTransferableVotes non-transferable) were as follows:
        |
        |${firstPreferenceVotes.rankText.mkString("\n")}
+       |
+       |Consequently, $outcomeSummary.
        """
-    //|1. Boaty McBoatFace: 234 votes (29%)\n2. Alder buckthorn: 100 votes (20%)\n3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total\n4. [Tie] Leyland Cypress, Plymouth Pear: 0 votes (0%)""".stripMargin
 }
 
 object Round {
@@ -91,8 +98,10 @@ object Round {
   object Outcome {
 
     case class ClearWinner(candidate: Candidate) extends Conclusion
-
-    case class Elimination(eliminationPath: Elimination.Approach, nextRound: Round) extends Outcome
+    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion
+    case class Elimination(eliminationPath: Elimination.Approach, nextRound: Round) extends Outcome {
+      val eliminatedCandidates: Set[Candidate] = eliminationPath.eliminatedCandidates
+    }
 
     object Elimination {
       sealed trait Approach {
@@ -114,12 +123,5 @@ object Round {
         override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.last
       }
     }
-
-    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion
   }
-
-
-
-
-
 }
