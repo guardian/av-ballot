@@ -77,13 +77,12 @@ case class Round(countByPreference: Map[Preference, Int]) {
     } yield updatedPreference -> votes).sumFrequencies)
   }
 
-  val summary: String =
-    s"""the ${firstPreferenceVotes.numVotes} votes ($nonTransferableVotes non-transferable) were as follows:
-       |
-       |${firstPreferenceVotes.rankText.mkString("\n")}
-       |
-       |Consequently, $outcomeSummary.
-       """
+  val summary: String = (Seq(
+    s"the ${firstPreferenceVotes.numVotes} votes ($nonTransferableVotes non-transferable) were as follows:",
+    firstPreferenceVotes.rankText.mkString("\n"),
+  ) ++
+    outcome.furtherExplanation(using firstPreferenceVotes)
+    ++ Seq(s"Consequently, $outcomeSummary.")).mkString("\n\n")
 }
 
 object Round {
@@ -92,20 +91,31 @@ object Round {
   def apply(firstElement: (Preference, Int), otherElements: (Preference, Int)*): Round =
     Round((firstElement +: otherElements).toMap)
 
-  sealed trait Outcome
+  sealed trait Outcome {
+    def furtherExplanation(using VotesPerCandidate): Option[String]
+  }
   sealed trait Conclusion extends Outcome
 
   object Outcome {
 
-    case class ClearWinner(candidate: Candidate) extends Conclusion
-    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion
-    case class Elimination(eliminationPath: Elimination.Approach, nextRound: Round) extends Outcome {
-      val eliminatedCandidates: Set[Candidate] = eliminationPath.eliminatedCandidates
+    case class ClearWinner(candidate: Candidate) extends Conclusion {
+      def furtherExplanation(using VotesPerCandidate): Option[String] = None
+    }
+    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion {
+      def furtherExplanation(using VotesPerCandidate): Option[String] = Some {
+        s"No way to resolve the Essential Tie - could not differentiate candidates: ${failedTieBreakFunnel}"
+      }
+    }
+    case class Elimination(approach: Elimination.Approach, nextRound: Round) extends Outcome {
+      val eliminatedCandidates: Set[Candidate] = approach.eliminatedCandidates
+      def furtherExplanation(using VotesPerCandidate): Option[String] = approach.explanation
     }
 
     object Elimination {
       sealed trait Approach {
         val eliminatedCandidates: Set[Candidate]
+
+        def explanation(using votes: VotesPerCandidate): Option[String]
       }
 
       /**
@@ -116,11 +126,19 @@ object Round {
        *  any other candidate's can be eliminated without changing the outcome. This bulk elimination can
        *  bypass irrelevant ties"
        */
-      case class FewerFirstPreferenceVotes(eliminatedCandidates: Set[Candidate]) extends Approach
+      case class FewerFirstPreferenceVotes(eliminatedCandidates: Set[Candidate]) extends Approach {
+        override def explanation(using votes: VotesPerCandidate): Option[String] = Option.when(eliminatedCandidates.size > 1) {
+          s"Collectively, candidates ${andJoin(eliminatedCandidates)} held only ${votes.votesFor(eliminatedCandidates)} votes, " +
+            s"fewer than any other candidate."
+        }
+      }
 
       // Show the narrowing set of last-placed candidates
       case class TieResolution(eliminationFunnel: EliminationFunnel) extends Approach {
         override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.last
+        override def explanation(using votes: VotesPerCandidate): Option[String] = Some {
+          s"A tie-break was applied: $eliminationFunnel"
+        }
       }
     }
   }

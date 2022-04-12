@@ -53,7 +53,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     )
     inside(round.outcome) {
       case elimination: Elimination =>
-        elimination.eliminationPath.eliminatedCandidates shouldBe Set(C)
+        elimination.approach.eliminatedCandidates shouldBe Set(C)
         elimination.nextRound.candidates shouldBe Set(A, B)
     }
   }
@@ -88,7 +88,7 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     )
     inside(round1.outcome) {
       case elimination: Elimination =>
-        inside(elimination.eliminationPath) {
+        inside(elimination.approach) {
           case path: TieResolution => path.eliminatedCandidates shouldBe Set(B, C)
         }
         elimination.nextRound.outcome shouldBe ClearWinner(A)
@@ -114,8 +114,10 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
       Preference(E) -> 3,
       Preference(F) -> 1
     )
+    println(round1.summary)
+
     inside(round1.outcome) {
-      case elimination: Elimination => inside(elimination.eliminationPath) {
+      case elimination: Elimination => inside(elimination.approach) {
         case path: FewerFirstPreferenceVotes => path.eliminatedCandidates shouldBe Set(C, D, E, F)
       }
     }

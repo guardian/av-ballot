@@ -6,5 +6,12 @@ case class Candidate(name:String) {
 
 extension (candidates: Iterable[Candidate])
 
+  def andJoin: String = candidates.toList.sortBy(_.name) match {
+    case candidate :: Nil => candidate.name
+    case candidate1 :: candidate2 :: Nil => s"$candidate1 and $candidate2"
+    case candidate :: otherCandidates => s"$candidate, ${otherCandidates.andJoin}"
+    case Nil => "no candidates"
+  }
+
   def wasOrWere: String =
-    s"${candidates.toSeq.sortBy(_.name).mkString(", ")} ${if (candidates.size == 1) "was" else "were"}"
+    s"${candidates.andJoin} ${if (candidates.size == 1) "was" else "were"}"

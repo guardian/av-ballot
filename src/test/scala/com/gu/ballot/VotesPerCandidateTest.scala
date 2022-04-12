@@ -23,6 +23,10 @@ class VotesPerCandidateTest extends AnyFlatSpec with Matchers with OptionValues 
     votesPerCandidate.clearWinner shouldBe None // 2 votes is not a majority from 4 votes
   }
 
+  it should "correctly give the votes recived by a subset of candidates" in {
+    VotesPerCandidate(Map(A -> 12, B -> 5, C -> 5)).votesFor(Set(B,C)) shouldBe 10
+  }
+
   it should "acknowledge candidates even if those candidates did not come first in any preference" in {
     val twoVotes = VotesPerCandidate(Map(A -> 2))
     twoVotes.majorityThreshold shouldBe 2

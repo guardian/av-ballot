@@ -57,7 +57,7 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
     case None => Some(numVotes)
   })
 
-  def votesFor(candidateSubSet: Set[Candidate]): Int = candidateSubSet.flatMap(votes.get).sum
+  def votesFor(candidateSubSet: Set[Candidate]): Int = candidateSubSet.toSeq.flatMap(votes.get).sum
 
   def wouldHaveMajorityWith(num: Int): Boolean = num >= majorityThreshold
   def wouldHaveMajorityWith(candidateSubSet: Set[Candidate]): Boolean = wouldHaveMajorityWith(votesFor(candidateSubSet))
