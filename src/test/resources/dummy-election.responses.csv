@@ -1,8 +1,15 @@
-Timestamp,Who is your choice? [1st place],Who is your choice? [2nd place],Who is your choice? [3rd Place],Who is your choice? [4th Place],Who is your choice? [5th Place]
-3/31/2022 22:00:01,Murari lal Maheshwari,東京日日新聞,Sinéad Cusack,Edward Taylor,Charles Prestwich Scott
-3/31/2022 22:00:21,Sinéad Cusack,東京日日新聞,Murari lal Maheshwari,Charles Prestwich Scott,Edward Taylor
-3/31/2022 22:00:39,東京日日新聞,Murari lal Maheshwari,Sinéad Cusack,Charles Prestwich Scott,Edward Taylor
-3/31/2022 22:01:07,Charles Prestwich Scott,Edward Taylor,Murari lal Maheshwari,Sinéad Cusack,東京日日新聞
-3/31/2022 22:01:47,Sinéad Cusack,Murari lal Maheshwari,Charles Prestwich Scott,Edward Taylor,東京日日新聞
-3/31/2022 22:02:11,Murari lal Maheshwari,東京日日新聞,Sinéad Cusack,Charles Prestwich Scott,Edward Taylor
-3/31/2022 22:02:28,Charles Prestwich Scott,Sinéad Cusack,Edward Taylor,Murari lal Maheshwari,東京日日新聞
+Timestamp,Email address,My preferences for the journalist director of the Scott Trust are: [1  (First choice)],My preferences for the journalist director of the Scott Trust are: [2],My preferences for the journalist director of the Scott Trust are: [3],My preferences for the journalist director of the Scott Trust are: [4],My preferences for the journalist director of the Scott Trust are: [5 (Last choice)]
+12/04/2022 09:57:41,test.address.1@guardian.co.uk,Mollie Peck,Cory Kelley,,Tracy Schneider,
+12/04/2022 09:58:56,test.address.2@guardian.co.uk,Mollie Peck,Cory Kelley,Iris Crane,Stan Barrett,Tracy Schneider
+12/04/2022 10:01:01,test.address.3@guardian.co.uk,Iris Crane,Cory Kelley,Stan Barrett,Mollie Peck,Tracy Schneider
+12/04/2022 10:01:30,test.address.4@guardian.co.uk,Mollie Peck,Cory Kelley,Iris Crane,Tracy Schneider,Stan Barrett
+12/04/2022 10:05:05,test.address.5@guardian.co.uk,Iris Crane,Mollie Peck,Cory Kelley,Tracy Schneider,Stan Barrett
+12/04/2022 10:05:08,test.address.6@guardian.co.uk,Stan Barrett,Iris Crane,Cory Kelley,Mollie Peck,Tracy Schneider
+12/04/2022 10:09:30,test.address.7@guardian.co.uk,Stan Barrett,Iris Crane,Cory Kelley,Mollie Peck,Tracy Schneider
+12/04/2022 10:10:07,test.address.8@guardian.co.uk,Tracy Schneider,Cory Kelley,Iris Crane,Stan Barrett,Mollie Peck
+12/04/2022 10:10:53,test.address.9@guardian.co.uk,Mollie Peck,Cory Kelley,Tracy Schneider,Iris Crane,Stan Barrett
+12/04/2022 10:18:13,test.address.10@guardian.co.uk,Stan Barrett,Tracy Schneider,Iris Crane,Mollie Peck,Cory Kelley
+12/04/2022 10:23:38,test.address.11@guardian.co.uk,Tracy Schneider,Mollie Peck,Cory Kelley,Iris Crane,
+12/04/2022 10:25:20,test.address.12@guardian.co.uk,Cory Kelley,Iris Crane,Mollie Peck,Stan Barrett,Tracy Schneider
+12/04/2022 10:27:04,test.address.13@guardian.co.uk,Mollie Peck,Iris Crane,,Tracy Schneider,Stan Barrett
+12/04/2022 10:35:36,test.address.14@guardian.co.uk,Mollie Peck,Tracy Schneider,Cory Kelley,,
