@@ -1,6 +1,9 @@
 package com.gu.ballot.av.cli
 
+import kantan.csv.*
+import kantan.csv.ops.*
 import com.gu.ballot.av.BallotReport
+import com.gu.ballot.av.csv.CsvSrc.FileSrc
 import com.gu.ballot.av.csv.VotesCsvParser
 import scopt.*
 
@@ -31,9 +34,9 @@ object CLIConfig {
 @main def main(args: String*) = {
   OParser.parse(CLIConfig.parser1, args, CLIConfig(new File("."))) match {
     case Some(config) =>
-      val ballotCount = VotesCsvParser.parse(config.votesFile)
-      val electorateSize = ballotCount.numVotes // until other file parsing added
-      println("\n"+BallotReport(electorateSize, ballotCount).report)
+      val ballotCount = VotesCsvParser.parse(FileSrc(config.votesFile))
+      val ballotReport = BallotReport.derivingElectorateFrom(ballotCount) // until other file parsing added
+      println("\n"+ballotReport.report)
     case _ =>
     // arguments are bad, error message will have been displayed
   }

@@ -9,16 +9,16 @@ import cats.implicits.*
 import com.gu.ballot.Candidate
 
 object VotesCsvParser {
-  def parse(file: java.io.File): BallotCount = {
-    require(file.exists())
-    val reader = file.asCsvReader[List[String]](rfc)
+  def parse(csvSource: CsvSrc): BallotCount = {
+    // require(file.exists())
+    val reader = csvSource.inputSrc()
 
     val header: List[String] = reader.next().toOption.get
+    val columnsBeforeVoteColumns = 2
+    println("Vote preference columns are:\n\n"+header.drop(columnsBeforeVoteColumns).map(s => s"\t* $s").mkString("\n"))
 
     val responses: (Seq[ReadError], Seq[List[String]]) = reader.toSeq.separate
-    val columnsBeforeVoteColumns = 2
 
-    println("Vote preference columns are:\n\n"+header.drop(columnsBeforeVoteColumns).map(s => s"\t* $s").mkString("\n"))
 
     val voteRows: Seq[List[String]] = responses._2
 

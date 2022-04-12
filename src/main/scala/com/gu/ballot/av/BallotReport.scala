@@ -24,3 +24,6 @@ case class BallotReport(electorateSize: Int, ballotCount: BallotCount) {
 
 }
 
+object BallotReport {
+  def derivingElectorateFrom(ballotCount: BallotCount) = BallotReport(ballotCount.numVotes, ballotCount)
+}
