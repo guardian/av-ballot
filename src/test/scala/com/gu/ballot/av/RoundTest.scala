@@ -104,6 +104,23 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside with OptionValues 
     println(round.summary)
   }
 
+  it should "end an elimination funnel as soon as it is clear who is last placed" in {
+    val round = Round(
+      Preference(A, B, C),
+      Preference(B, C),
+      Preference(C, B, A)
+    )
+    inside(round.outcome) {
+      case elimination: Elimination =>
+        inside(elimination.approach) {
+          case TieResolution(funnel) =>
+            funnel.postFirstPreferenceStages.size shouldBe 1
+            funnel.ultimateCandidates shouldBe Set(A)
+        }
+    }
+    println(round.summary)
+  }
+
   it should "ultimately respect Robert's Rules of Order (RRO) on IRV ties in last-place elimination" in {
     /**
      * Robert's Rules of Order say:

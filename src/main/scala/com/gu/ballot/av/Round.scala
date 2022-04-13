@@ -42,7 +42,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
         case (funnelStages, preferenceStage) =>
           val funnelStage: VotesPerCandidate = preferenceStage.subSetFor(funnelStages.last.rankedByVotes.last.candidates)
           val updatedFunnel = funnelStages :+ funnelStage
-          Either.cond(!funnelStage.hasSingleCandidateRemaining, updatedFunnel, updatedFunnel)
+          Either.cond(!funnelStage.hasSingleLastPlacedCandidate, updatedFunnel, updatedFunnel)
       }.merge.tail).map(EliminationFunnel(_))
 
       funnelOpt.map {

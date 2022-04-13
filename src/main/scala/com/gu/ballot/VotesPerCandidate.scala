@@ -24,11 +24,12 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
   val majorityThreshold:Int = 1+(numVotes/2)
   
   val candidates: Set[Candidate] = votes.keySet
-  val hasSingleCandidateRemaining: Boolean = candidates.size == 1
 
   val rankedByVotes: SortedSet[VoteRank] = SortedSet.from(for {
     (individualVotes, rankGroup) <- votes.groupUp(_._2)(_.keySet)
   } yield VoteRank(rankGroup, individualVotes))
+
+  val hasSingleLastPlacedCandidate: Boolean = rankedByVotes.last.candidates.size == 1
 
   val clearWinner: Option[Candidate] = rankedByVotes.head match {
     case voteRank: SingleCandidate if voteRank.individualVotes >= majorityThreshold => Some(voteRank.candidate)
