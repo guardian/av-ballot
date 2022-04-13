@@ -37,21 +37,23 @@ case class Round(countByPreference: Map[Preference, Int]) {
     firstPreferenceVotes.candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate.map { voo =>
       FewerFirstPreferenceVotes(voo.candidates)
     }.toRight {
-      val funnel: EliminationFunnel =
-        preferenceStages.tail.foldM(EliminationFunnel(NonEmptySeq.one(firstPreferenceVotes.forLastRankedCandidates))) {
-          case (funnel, preferenceStage) =>
-            val funnelStage: VotesPerCandidate = preferenceStage.subSetFor(funnel.stages.last.rankedByVotes.last.candidates)
-            val updatedFunnel = funnel.add(funnelStage)
-            Either.cond(funnelStage.hasSingleCandidateRemaining, updatedFunnel, updatedFunnel)
-        }.merge
+      val boof = preferenceStages.toList
+      val funnelOpt = NonEmptySeq.fromSeq(boof.tail.foldM(Seq(boof.head)) {
+        case (funnelStages, preferenceStage) =>
+          val funnelStage: VotesPerCandidate = preferenceStage.subSetFor(funnelStages.last.rankedByVotes.last.candidates)
+          val updatedFunnel = funnelStages :+ funnelStage
+          Either.cond(!funnelStage.hasSingleCandidateRemaining, updatedFunnel, updatedFunnel)
+      }.merge.tail).map(EliminationFunnel(_))
 
-      Either.cond(funnel.ultimateCandidates.size < candidates.size, TieResolution(funnel), EssentialTie(funnel))
+      funnelOpt.map {
+        funnel => Either.cond(funnel.ultimateCandidates.size < candidates.size, TieResolution(funnel), EssentialTie(Some(funnel)))
+      }.getOrElse(Left(EssentialTie(None)))
     }
     borg.joinLeft.map(technique => Elimination(technique, eliminate(technique.eliminatedCandidates))).merge
   }
 
   lazy val outcomeSummary: String = outcome match {
-    case ClearWinner(winner) => s"with a majority of xx%, $winner was declared winner"
+    case ClearWinner(winner) => s"$winner was declared winner"
     case elimination: Elimination => s"${elimination.eliminatedCandidates.wasOrWere} eliminated"
     case essentialTie: EssentialTie => "there was an essential tie."
   }
@@ -99,10 +101,9 @@ object Round {
     case class ClearWinner(candidate: Candidate) extends Conclusion {
       def furtherExplanation(using VotesPerCandidate): Option[String] = None
     }
-    case class EssentialTie(failedTieBreakFunnel: EliminationFunnel) extends Conclusion {
-      def furtherExplanation(using VotesPerCandidate): Option[String] = Some {
-        s"No way to resolve the Essential Tie - could not differentiate candidates: ${failedTieBreakFunnel}"
-      }
+    case class EssentialTie(failedTieBreakFunnel: Option[EliminationFunnel]) extends Conclusion {
+      // val tiedCandidates: Set[Candidate] = failedTieBreakFunnel.map(_.ultimateCandidates).get
+      def furtherExplanation(using VotesPerCandidate): Option[String] = failedTieBreakFunnel.map(_.summary)
     }
     case class Elimination(approach: Elimination.Approach, nextRound: Round) extends Outcome {
       val eliminatedCandidates: Set[Candidate] = approach.eliminatedCandidates

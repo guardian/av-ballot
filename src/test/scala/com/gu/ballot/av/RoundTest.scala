@@ -10,11 +10,11 @@ import com.gu.ballot.VotesPerCandidate.VoteRank.{SingleCandidate, Tie}
 import com.gu.ballot.av.Round.Outcome.*
 import com.gu.ballot.av.Round.Outcome.Elimination.*
 import kantan.csv.{ReadError, rfc}
-import org.scalatest.Inside
+import org.scalatest.{Inside, OptionValues}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class RoundTest extends AnyFlatSpec with Matchers with Inside {
+class RoundTest extends AnyFlatSpec with Matchers with Inside with OptionValues {
 
   it should "acknowledge candidates even if those candidates did not come first in any preference" in {
     Round(
@@ -63,8 +63,45 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     round.firstPreferenceVotes.rankedByVotes.head.candidates shouldBe Set(A, B)
     inside(round.outcome) {
       case essentialTie: EssentialTie =>
-        essentialTie.failedTieBreakFunnel.ultimateCandidates shouldBe Set(A, B)
+        essentialTie.failedTieBreakFunnel shouldBe None
     }
+    println(round.summary)
+  }
+
+  it should "simpler handle essential ties at the end of comparing subsequent-preferences" in {
+    val round = Round(
+      Preference(A, B),
+      Preference(B, C),
+      Preference(C, A),
+      Preference(A),
+      Preference(B),
+      Preference(C)
+    )
+    inside(round.outcome) {
+      case essentialTie: EssentialTie =>
+        val funnel = essentialTie.failedTieBreakFunnel.value
+        funnel.postFirstPreferenceStages.size shouldBe 1
+        funnel.ultimateCandidates shouldBe Set(A, B, C)
+    }
+    println(round.summary)
+  }
+
+  it should "handle essential ties at the end of comparing subsequent-preferences" in {
+    val round = Round(
+      Preference(A, B, C),
+      Preference(B, C, A),
+      Preference(C, A, B),
+      Preference(A, B),
+      Preference(B, C),
+      Preference(C, A)
+    )
+    inside(round.outcome) {
+      case essentialTie: EssentialTie =>
+        val funnel = essentialTie.failedTieBreakFunnel.value
+        funnel.postFirstPreferenceStages.size shouldBe 2
+        funnel.ultimateCandidates shouldBe Set(A, B, C)
+    }
+    println(round.summary)
   }
 
   it should "ultimately respect Robert's Rules of Order (RRO) on IRV ties in last-place elimination" in {
@@ -124,7 +161,6 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
       }
     }
   }
-
 
   it should "provide a sensible elimination funnel in a tie situation" in {
     val round = Round(

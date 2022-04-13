@@ -4,14 +4,27 @@ import cats.data.NonEmptySeq
 import com.gu.ballot.{Candidate, VotesPerCandidate}
 import com.gu.ballot.*
 
-case class EliminationFunnel(stages: NonEmptySeq[VotesPerCandidate]) {
-  def add(nextStage: VotesPerCandidate): EliminationFunnel = EliminationFunnel(stages :+ nextStage)
+/**
+ * @param postFirstPreferenceStages the votes for candidates being considered for elimination, starting with
+ *                                  2nd-preference votes
+ */
+case class EliminationFunnel(postFirstPreferenceStages: NonEmptySeq[VotesPerCandidate]) {
+  def add(nextStage: VotesPerCandidate): EliminationFunnel = EliminationFunnel(postFirstPreferenceStages :+ nextStage)
 
-  val initialCandidates: Set[Candidate] = stages.head.candidates
-  val ultimateCandidates: Set[Candidate] = stages.last.rankedByVotes.last.candidates
+  /**
+   * The initialCandidates in an elimination funnel are solely the candidates that were tied-last-place
+   * in a round.
+   */
+  val initialCandidates: Set[Candidate] = postFirstPreferenceStages.head.candidates
+
+  /**
+   * The ultimateCandidates in an elimination funnel are the candidates tied-last-place
+   * in the consideration of the last stage of preferences. Hopefully just 1 candidate!
+   */
+  val ultimateCandidates: Set[Candidate] = postFirstPreferenceStages.last.rankedByVotes.last.candidates
 
   val summary: String = {
-    val stagesSummary = (for ((stage, index) <- stages.toSeq.zipWithOneBasedIndex.tail) yield {
+    val stagesSummary = (for ((stage, index) <- postFirstPreferenceStages.toSeq.zipWithOffsetIndex(2)) yield {
       (s"${index.ordinal}-preference votes:" +: stage.rankText).map("\t"+_).mkString("\n")
     }).mkString("\n\n")
 
