@@ -22,6 +22,9 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
   val numVotes:Int = votes.values.sum
   val hasVotes: Boolean = numVotes > 0
   val majorityThreshold:Int = 1+(numVotes/2)
+  
+  val candidates: Set[Candidate] = votes.keySet
+  val hasSingleCandidateRemaining: Boolean = candidates.size == 1
 
   val rankedByVotes: SortedSet[VoteRank] = SortedSet.from(for {
     (individualVotes, rankGroup) <- votes.groupUp(_._2)(_.keySet)
@@ -59,17 +62,25 @@ case class VotesPerCandidate(votes: Map[Candidate, Int]) {
 
   def votesFor(candidateSubSet: Set[Candidate]): Int = candidateSubSet.toSeq.flatMap(votes.get).sum
 
+  def subSetFor(candidateSubSet: Set[Candidate]): VotesPerCandidate = VotesPerCandidate(
+    votes.view.filterKeys(candidateSubSet).toMap
+  )
+
+  def forLastRankedCandidates: VotesPerCandidate = subSetFor(rankedByVotes.last.candidates)
+
+//  /** @return It's possible that this group of candidates will collectively hold a *majority*
+//   * of the vote, if they are multiple tied candidates, rather than a single candidate!
+//   */
+//  def lastPlacedAmongst(candidateSubSet: Set[Candidate]): VotesPerCandidate = {
+//    require(candidateSubSet.subsetOf(votes.keySet))
+//
+//    VotesPerCandidate(votes.view.filterKeys(candidateSubSet).toMap)
+//  }
+
   def wouldHaveMajorityWith(num: Int): Boolean = num >= majorityThreshold
   def wouldHaveMajorityWith(candidateSubSet: Set[Candidate]): Boolean = wouldHaveMajorityWith(votesFor(candidateSubSet))
 
-  /** @return It's possible that this group of candidates will collectively hold a *majority*
-   * of the vote, if they are multiple tied candidates, rather than a single candidate!
-   */
-  def lastPlacedAmongst(candidateSubSet: Set[Candidate]): Set[Candidate] = {
-    require(candidateSubSet.subsetOf(votes.keySet))
 
-    VotesPerCandidate(votes.view.filterKeys(candidateSubSet).sumFrequencies).rankedByVotes.last.candidates
-  }
 }
 
 object VotesPerCandidate {

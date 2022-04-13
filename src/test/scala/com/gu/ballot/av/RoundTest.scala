@@ -61,7 +61,10 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
   it should "not crash if the result is a tie" in {
     val round = Round(Preference(A), Preference(B))
     round.firstPreferenceVotes.rankedByVotes.head.candidates shouldBe Set(A, B)
-    round.outcome shouldBe EssentialTie(NonEmptySeq.one(Set(A, B)))
+    inside(round.outcome) {
+      case essentialTie: EssentialTie =>
+        essentialTie.failedTieBreakFunnel.ultimateCandidates shouldBe Set(A, B)
+    }
   }
 
   it should "ultimately respect Robert's Rules of Order (RRO) on IRV ties in last-place elimination" in {
@@ -96,7 +99,6 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     round1.ultimateConclusion shouldBe ClearWinner(A)
   }
 
-
   it should "perform bulk elimination to avoid irrelevant ties" in {
     /* From https://en.wikipedia.org/wiki/Instant-runoff_voting#Process :
      * "If there is an exact tie for last place in numbers of votes, various tie-breaking rules
@@ -123,4 +125,22 @@ class RoundTest extends AnyFlatSpec with Matchers with Inside {
     }
   }
 
+
+  it should "provide a sensible elimination funnel in a tie situation" in {
+    val round = Round(
+      Preference(A) -> 3,
+      Preference(B, C) -> 2,
+      Preference(C, A) -> 2
+    )
+    inside(round.outcome) {
+      case elimination: Elimination =>
+        inside(elimination.approach) {
+          case path: TieResolution =>
+            val funnel = path.eliminationFunnel
+            funnel.initialCandidates shouldBe Set(B,C)
+            funnel.ultimateCandidates shouldBe Set(B)
+        }
+    }
+    round.ultimateConclusion shouldBe ClearWinner(C)
+  }
 }

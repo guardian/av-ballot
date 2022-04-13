@@ -28,11 +28,11 @@ In round 2, the 1234 votes (128 non-transferable) were as follows:
 2. Alder buckthorn: 100 votes (20%)
 3. [Tie] Whitebeam, Sycamore, Western Red Cedar: 50 votes (17%) each, 150 votes (51%) total
 
-The tied last-placed candidates (Whitebeam, Sycamore, Western Red Cedar) collectively held a majority -
-51% of the first-preference vote. Rather than eliminate all of them, further preferences for those candidates were
-checked (only candidates being considered for last-place are listed):
+In order to decide who should be eliminated amongst the candidates tied for last-place
+(Whitebeam, Sycamore, Western Red Cedar), subsequent-preference votes were checked
+(only candidates being considered for elimination are listed):
 
-    2nd-preference votes for these three candidates (876 votes, 82% total):
+    2nd-preference votes:
     1. Whitebeam: 123 votes (30%)
     2. [Tie] Sycamore, Western Red Cedar: 50 votes (26%) each, 100 votes (52%) total
 

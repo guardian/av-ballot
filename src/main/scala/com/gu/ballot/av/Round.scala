@@ -11,8 +11,6 @@ import com.gu.ballot.av.Round.Outcome.Elimination.{FewerFirstPreferenceVotes, Ti
 
 import scala.collection.immutable.SortedMap
 
-type EliminationFunnel = NonEmptySeq[Set[Candidate]]
-
 case class Round(countByPreference: Map[Preference, Int]) {
   
   val candidates:Set[Candidate] = countByPreference.keySet.flatMap(_.order.toSeq)
@@ -35,19 +33,19 @@ case class Round(countByPreference: Map[Preference, Int]) {
     // Elimination: Is there a strict subset of candidates (possibly 1 candidate) that collectively have fewer
     // votes than all the other voters? If so, yay - otherwise we have a lowest-rank tie, and need to try to
     // differentiate among the candidates in that lowest rank (which may be the only rank) to find the worst one.
-    val borg: Either[Either[EssentialTie, TieResolution], Elimination.Approach] = firstPreferenceVotes.candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate.map { voo =>
+    val borg: Either[Either[EssentialTie, TieResolution], Elimination.Approach] =
+    firstPreferenceVotes.candidatesThatCollectivelyHaveFewerVotesThanAnyOtherCandidate.map { voo =>
       FewerFirstPreferenceVotes(voo.candidates)
     }.toRight {
       val funnel: EliminationFunnel =
-        preferenceStages.tail.foldM(NonEmptySeq.one(firstPreferenceVotes.rankedByVotes.last.candidates)) {
+        preferenceStages.tail.foldM(EliminationFunnel(NonEmptySeq.one(firstPreferenceVotes.forLastRankedCandidates))) {
           case (funnel, preferenceStage) =>
-            val funnelStage: Set[Candidate] = preferenceStage.lastPlacedAmongst(funnel.last)
-            val updatedFunnel = funnel.append(funnelStage)
-            val singleCandidateIdentified = funnelStage.size == 1
-            Either.cond(singleCandidateIdentified, updatedFunnel, updatedFunnel)
+            val funnelStage: VotesPerCandidate = preferenceStage.subSetFor(funnel.stages.last.rankedByVotes.last.candidates)
+            val updatedFunnel = funnel.add(funnelStage)
+            Either.cond(funnelStage.hasSingleCandidateRemaining, updatedFunnel, updatedFunnel)
         }.merge
 
-      Either.cond(funnel.last.size < candidates.size,TieResolution(funnel), EssentialTie(funnel))
+      Either.cond(funnel.ultimateCandidates.size < candidates.size, TieResolution(funnel), EssentialTie(funnel))
     }
     borg.joinLeft.map(technique => Elimination(technique, eliminate(technique.eliminatedCandidates))).merge
   }
@@ -128,17 +126,14 @@ object Round {
        */
       case class FewerFirstPreferenceVotes(eliminatedCandidates: Set[Candidate]) extends Approach {
         override def explanation(using votes: VotesPerCandidate): Option[String] = Option.when(eliminatedCandidates.size > 1) {
-          s"Collectively, candidates ${andJoin(eliminatedCandidates)} held only ${votes.votesFor(eliminatedCandidates)} votes, " +
+          s"Collectively, candidates ${eliminatedCandidates.andJoin} held only ${votes.votesFor(eliminatedCandidates)} votes, " +
             s"fewer than any other candidate."
         }
       }
 
-      // Show the narrowing set of last-placed candidates
       case class TieResolution(eliminationFunnel: EliminationFunnel) extends Approach {
-        override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.last
-        override def explanation(using votes: VotesPerCandidate): Option[String] = Some {
-          s"A tie-break was applied: $eliminationFunnel"
-        }
+        override val eliminatedCandidates: Set[Candidate] = eliminationFunnel.ultimateCandidates
+        override def explanation(using votes: VotesPerCandidate): Option[String] = Some(eliminationFunnel.summary)
       }
     }
   }

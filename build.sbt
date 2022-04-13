@@ -9,5 +9,6 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "4.0.1",
   "org.typelevel" %% "cats-core" % "2.7.0",
   "com.madgag" %% "scala-collection-plus" % "0.11",
+  "com.ibm.icu" % "icu4j" % "71.1",
   "org.scalatest" %% "scalatest" % "3.2.11" % Test
 )
