@@ -53,7 +53,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
   }
 
   lazy val outcomeSummary: String = outcome match {
-    case ClearWinner(winner) => s"$winner was declared winner"
+    case ClearWinner(winner) => s"$winner was declared the winner"
     case elimination: Elimination => s"${elimination.eliminatedCandidates.wasOrWere} eliminated"
     case essentialTie: EssentialTie => "there was an essential tie."
   }
