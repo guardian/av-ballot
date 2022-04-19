@@ -15,7 +15,7 @@ case class Round(countByPreference: Map[Preference, Int]) {
   
   val candidates:Set[Candidate] = countByPreference.keySet.flatMap(_.order.toSeq)
 
-  require(candidates.nonEmpty)
+  require(candidates.nonEmpty, "There needs to be some candidates!")
 
   val preferenceStages:LazyList[VotesPerCandidate] = LazyList.from(0).map { index =>
     countByPreference.foldLeft(VotesPerCandidate.zeroForAll(candidates)) {

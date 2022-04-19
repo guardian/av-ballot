@@ -4,16 +4,16 @@ import kantan.csv.*
 import kantan.csv.ops.*
 import java.io.File
 
-sealed trait CsvSrc {
-  def inputSrc(): CsvReader[ReadResult[List[String]]]
+sealed trait CsvSrc[T] {
+  def inputSrc(): CsvReader[ReadResult[T]]
 }
 
 object CsvSrc {
-  case class FileSrc(file: File) extends CsvSrc {
-    override def inputSrc(): CsvReader[ReadResult[List[String]]] = file.asCsvReader[List[String]](rfc)
+  case class FileSrc[B: HeaderDecoder](file: File) extends CsvSrc[B] {
+    override def inputSrc(): CsvReader[ReadResult[B]] = file.asCsvReader[B](rfc)
   }
 
-  case class UrlSrc(url: java.net.URL) extends CsvSrc {
-    override def inputSrc(): CsvReader[ReadResult[List[String]]] = url.asCsvReader[List[String]](rfc)
+  case class UrlSrc[B: HeaderDecoder](url: java.net.URL) extends CsvSrc[B] {
+    override def inputSrc(): CsvReader[ReadResult[B]] = url.asCsvReader[B](rfc)
   }
 }
