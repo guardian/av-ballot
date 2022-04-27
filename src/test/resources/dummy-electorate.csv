@@ -3,9 +3,9 @@ Email address,Nickname,Group status,Email status,Email preference,Posting permis
 test.address.1@theguardian.com,,member,,email,not allowed,2022,4,14,14,53,12,British Summer Time
 Test.address.2@theguardian.com,,member,,email,not allowed,2022,4,14,14,53,0,British Summer Time
 test.Address.3@theguardian.com,,member,,email,not allowed,2022,4,14,14,54,34,British Summer Time
-Test.Address.4@theguardian.com,,member,,email,not allowed,2022,4,14,14,54,1,British Summer Time
-test.address.5@theguardian.com,,member,,email,not allowed,2022,4,14,14,54,28,British Summer Time
-test.address.6@theguardian.com,,member,,email,not allowed,2022,4,14,14,54,35,British Summer Time
-test.address.7@theguardian.com,,member,,email,not allowed,2022,4,14,14,53,40,British Summer Time
-test.address.8@theguardian.com,,member,,email,not allowed,2022,4,14,14,53,40,British Summer Time
+Test.Address.4@theguardian.com,,owner,,email,not allowed,2022,4,14,14,54,1,British Summer Time
+test.address.5@theguardian.com,,owner,,email,not allowed,2022,4,14,14,54,28,British Summer Time
+test.address.6@theguardian.com,,pending,,email,not allowed,2022,4,14,14,54,35,British Summer Time
+test.address.7@theguardian.com,,pending,,email,not allowed,2022,4,14,14,53,40,British Summer Time
+test.address.8@theguardian.com,,pending,,email,not allowed,2022,4,14,14,53,40,British Summer Time
 test.address.100@theguardian.com,,member,,email,not allowed,2022,4,14,14,53,40,British Summer Time

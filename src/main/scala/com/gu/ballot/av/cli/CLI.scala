@@ -4,6 +4,7 @@ import kantan.csv.*
 import kantan.csv.ops.*
 import com.gu.ballot.av.BallotReport
 import com.gu.ballot.av.csv.CsvImport.*
+import com.gu.ballot.av.csv.GoogleGroup.*
 import com.gu.ballot.av.csv.CsvSrc.FileSrc
 import com.gu.ballot.av.csv.{CsvImport, ElectorateCsvParser, VotesCsvParser}
 import scopt.*

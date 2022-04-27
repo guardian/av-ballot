@@ -7,7 +7,7 @@ import com.gu.ballot.av.csv.CsvSrc.FileSrc
 import java.io.File
 
 object CsvImport {
-  def importData(votesCsv: CsvSrc[List[String]], electorateFile: Option[CsvSrc[EmailAddress]] = None): BallotReport = {
+  def importData(votesCsv: CsvSrc[List[String]], electorateFile: Option[CsvSrc[ElectorateRow]] = None): BallotReport = {
     val electorateOpt: Option[Electorate] =
       for (electorateFile <- electorateFile) yield ElectorateCsvParser.parse(electorateFile)
 
