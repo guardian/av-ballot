@@ -6,7 +6,7 @@ import com.gu.ballot.av.BallotReport
 import com.gu.ballot.av.csv.CsvImport.*
 import com.gu.ballot.av.csv.GoogleGroup.*
 import com.gu.ballot.av.csv.CsvSrc.FileSrc
-import com.gu.ballot.av.csv.{CsvImport, ElectorateCsvParser, VotesCsvParser}
+import com.gu.ballot.av.csv.{CsvExport, CsvImport, ElectorateCsvParser, VotesCsvParser}
 import scopt.*
 
 import java.io.File
@@ -36,7 +36,8 @@ object CLIConfig {
 @main def main(args: String*) = {
   OParser.parse(CLIConfig.parser1, args, CLIConfig(new File("."))) match {
     case Some(config) =>
-      importData(FileSrc(config.votesFile), config.electorateFile.map(FileSrc.apply))
+      val ballotReport = importData(FileSrc(config.votesFile), config.electorateFile.map(FileSrc.apply))
+      CsvExport.exportAnonymisedData(ballotReport.ballotCount)
     case _ =>
     // arguments are bad, error message will have been displayed
   }
