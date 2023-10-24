@@ -6,7 +6,7 @@ scalaVersion := "3.1.1"
 
 libraryDependencies ++= Seq(
   ("com.nrinaudo" %% "kantan.csv" % "0.6.2").cross(CrossVersion.for3Use2_13),
-  "com.github.scopt" %% "scopt" % "4.0.1",
+  "com.github.scopt" %% "scopt" % "4.1.0",
   "org.typelevel" %% "cats-core" % "2.7.0",
   "com.madgag" %% "scala-collection-plus" % "0.11",
   "com.ibm.icu" % "icu4j" % "71.1",
