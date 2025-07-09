@@ -2,7 +2,7 @@ name := "av-ballot"
 
 description := "Processing AV ballot votes"
 
-scalaVersion := "3.3.1"
+scalaVersion := "3.3.6"
 
 libraryDependencies ++= Seq(
   ("com.nrinaudo" %% "kantan.csv" % "0.8.0").cross(CrossVersion.for3Use2_13),
