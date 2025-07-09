@@ -10,5 +10,5 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "2.10.0",
   "com.madgag" %% "scala-collection-plus" % "1.0.0",
   "com.ibm.icu" % "icu4j" % "77.1",
-  "org.scalatest" %% "scalatest" % "3.2.18" % Test
+  "org.scalatest" %% "scalatest" % "3.2.19" % Test
 )
